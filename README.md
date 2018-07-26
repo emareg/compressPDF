@@ -1,11 +1,11 @@
 
 # compressPDF
-This bash script can reduce the file size of a `.pdf` file. It works best for scanned documents and documents created with `pdfLaTeX`.
+Interactive bash script to reduce the file size of a `.pdf` file. It works best for scanned documents and documents created with `pdfLaTeX`.
 
-Observed compressions:
+Observed compression results:
 
-- Scans: 10% - 60% reduced file size
-- pdfLaTeX: 30% - 80% reduced file size
+- Scans: 10% – 60% reduced file size
+- pdfLaTeX: 30% – 80% reduced file size
 
 
 ## Features
