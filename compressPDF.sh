@@ -26,7 +26,7 @@ fi
 
 # menu
   echo "
-  Select Color Option (or ENTER to leave untouched): 
+Select Color Option (or ENTER to leave untouched): 
 
   1) Gray
   2) Color
@@ -41,17 +41,17 @@ fi
 
 
   echo "
-  Select Base Qualtity (or ENTER to leave untouched): 
+Select Base Qualtity (or ENTER to leave untouched): 
 
-  1) printer (300 DPI)
+  1) screen (72 DPI)
   2) ebook (150 DPI)
-  3) screen (72 DPI)
+  3) printer (300 DPI)
   "
   read -p "Your Choice: " pdfset
   case $pdfset in
-      1) PDF_FLAGS="-dPDFSETTINGS=/printer";;
+      1) PDF_FLAGS="-dPDFSETTINGS=/screen";;
       2) PDF_FLAGS="-dPDFSETTINGS=/ebook";;
-      3) PDF_FLAGS="-dPDFSETTINGS=/screen";;
+      3) PDF_FLAGS="-dPDFSETTINGS=/printer";;
       "") PDF_FLAGS="";;
       *) echo "invalid option";;
   esac
@@ -63,7 +63,7 @@ Select Image Quality (or ENTER to leave untouched):
   1) 150 DPI (readable text)
   2) 200 DPI (good looking scans)
   3) 300 DPI (print photographs)
-  4) 600 DPI (too high)
+  4) 600 DPI (high resolution)
 
   or type a number between 72 and 1200 DPI
 "
@@ -94,20 +94,21 @@ fi
 
 
 # todo:
-# echo "
-# Select Font Options (or ENTER to leave untouched):
-#   1) embedd all fonts as subsets
-#   2) embedd all fonts completeley
-#   2) remove all embedded fonts
-# "
-# read -p "Your Choice: " fontchoice
-# case $fontchoice in
-#     1) FONT_FLAGS=" -dEmbedAllFonts=true -dSubsetFonts=true";;
-#     1) FONT_FLAGS=" -dEmbedAllFonts=true -dSubsetFonts=false";;
-#     1) FONT_FLAGS=" -dEmbedAllFonts=false";;
-#     "") FONT_FLAGS="";;
-#     *) echo "invalid option";;
-# esac
+echo "
+Select Font Options (or ENTER to leave untouched):
+
+  1) embed all fonts as subsets (recommended)
+  2) embed all fonts completely
+  3) remove all embedded fonts
+"
+read -p "Your Choice: " fontchoice
+case $fontchoice in
+    1) FONT_FLAGS=" -dEmbedAllFonts=true -dSubsetFonts=true";;
+    2) FONT_FLAGS=" -dEmbedAllFonts=true -dSubsetFonts=false";;
+    3) FONT_FLAGS=" -dEmbedAllFonts=false";;
+    "") FONT_FLAGS="";;
+    *) echo "invalid option";;
+esac
 
 
 
@@ -119,6 +120,7 @@ gs -dBATCH -dNOPAUSE -dSAFER \
  ${PDF_FLAGS} \
  ${COLOR_FLAGS} \
  ${DPI_FLAGS} \
+ ${FONT_FLAGS} \
  -sOutputFile=$OUTPUT $1
 
 
