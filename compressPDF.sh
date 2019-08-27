@@ -41,7 +41,7 @@ Select Color Option (or ENTER to leave untouched):
 
 
   echo "
-Select Base Qualtity (or ENTER to leave untouched): 
+Select Base Qualtity (printer is default): 
 
   1) screen (72 DPI)
   2) ebook (150 DPI)
