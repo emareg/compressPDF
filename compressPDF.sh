@@ -45,14 +45,14 @@ Select Base Qualtity (or ENTER to leave untouched):
 
   1) screen (72 DPI)
   2) ebook (150 DPI)
-  3) printer (300 DPI)
+  3) printer (300 DPI, default)
   "
   read -p "Your Choice: " pdfset
   case $pdfset in
       1) PDF_FLAGS="-dPDFSETTINGS=/screen";;
       2) PDF_FLAGS="-dPDFSETTINGS=/ebook";;
       3) PDF_FLAGS="-dPDFSETTINGS=/printer";;
-      "") PDF_FLAGS="";;
+      "") PDF_FLAGS="-dPDFSETTINGS=/printer";;
       *) echo "invalid option";;
   esac
 
@@ -135,8 +135,8 @@ if [ $? == '0' ]; then
         exit;
     fi
     if [ ${optsize} -ge ${orgsize} ]; then
-        echo "Didn't make it smaller! Keeping original"
-        rm -f "${OUTPUT}"
+        echo "Didn't make it smaller!"
+        # rm -f "${OUTPUT}"
         exit;
     fi
     bytesSaved=$(expr $orgsize - $optsize)
