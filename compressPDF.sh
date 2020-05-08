@@ -1,5 +1,5 @@
 #!/bin/bash
-# author: emanuel.regnath@tum.de
+# Author: emanuel.regnath@tum.de
 
 # help
 function print_usage(){
@@ -7,25 +7,72 @@ function print_usage(){
 }
 
 
+
+bytes_saved(){
+  # print stats
+  if [ -f $1 ]; then
+    orgsize=$(stat -c "%s" "${1}")
+    optsize=$(stat -c "%s" "${2}")
+    if [[ "${optsize}" -eq 0 ]]; then
+        rm -f "${2}"
+        printf '\033[0;33m%s\033[0m\n' "ERROR, 0B. Deleted."
+    fi 
+    bytesSaved=$(expr $orgsize - $optsize)
+    percent=$(expr $optsize '*' 100 / $orgsize)
+    if [[ "${percent}" -gt 100 ]]; then
+      printf '\033[0;31m%3d%% now, sorry.\033[0m\n' ${percent}
+    elif [[ "${percent}" -gt 80 ]]; then
+      printf '\033[1;33m%3d%%\033[0m now, saved %d bytes.\n' ${percent} $bytesSaved
+    else
+      printf '\033[1;32m%3d%%\033[0m now, saved %d bytes.\n' ${percent} $bytesSaved
+    fi
+  fi 
+}
+
+
+
 # check arguments
 if [[ -f $1 ]]; then
   INPUT="$1"
-  if [[ -f $2 ]]; then
-    OUTPUT=$2
-  else
-    OUTPUT="./output.pdf"
+  if [[ -z "$2" ]]; then
+    OUTPUT="./output_compressed.pdf"
+  elif [[ -f "$2" ]]; then
+    echo "$2 already exists. Please move or delete it first and try again."
+    exit 1
+  else 
+    OUTPUT="$2"
   fi
-  echo "Convertig $INPUT to $OUTPUT"
+elif [[ -d $1 ]]; then
+  INPUT_DIR="${1%/}"
+  OUTPUT_DIR="${INPUT_DIR}_compressed"
+  pdfs=($(\ls "$1" | \grep -E '^*.pdf$'))
+  #pdfs=($(find "$1" -maxdepth 1 -iname '*.pdf'))
+  echo "'$INPUT_DIR/' is a directory. I will compress the following ${#pdfs[@]} PDFs and write them to '${OUTPUT_DIR}/'."
+  printf '  - %s\n' "${pdfs[@]}"
+  if [[ -d "$OUTPUT_DIR" ]]; then
+    echo -en "\033[1;31mWarning:\033[0m '$OUTPUT_DIR/' already exists. "
+    read -p "Overwrite it? (y|n)" -n 1 yn
+  else
+    read -p "Do you want to compress all of the above? (y|n) " -n 1 yn
+  fi 
+  echo ""
+  if [[ "$yn" =~ ^[Yy]$ ]]; then
+    echo "OK. Please select compression options."
+  else
+    echo "Sorry. Bye."
+    exit 0
+  fi
 else
+  echo "'$1' is neither a PDF nor a directory."
   print_usage
-  exit 0
+  exit 1
 fi
 
 
 
 
 # menu
-  echo "
+echo "
 Select Color Option (or ENTER to leave untouched): 
 
   1) Gray
@@ -115,34 +162,54 @@ esac
 # convert using ghostscript
 echo "Optimizing PDF ..."
 
-gs -dBATCH -dNOPAUSE -dSAFER \
- -sDEVICE=pdfwrite -dCompatibilityLevel=1.5 \
- ${PDF_FLAGS} \
- ${COLOR_FLAGS} \
- ${DPI_FLAGS} \
- ${FONT_FLAGS} \
- -sOutputFile=$OUTPUT $1
+if [ -z "$OUTPUT_DIR" ]; then
+  echo "Converting $INPUT to $OUTPUT"
 
+  gs -dBATCH -dNOPAUSE -dSAFER \
+   -sDEVICE=pdfwrite -dCompatibilityLevel=1.5 \
+   ${PDF_FLAGS} \
+   ${COLOR_FLAGS} \
+   ${DPI_FLAGS} \
+   ${FONT_FLAGS} \
+   -sOutputFile="$OUTPUT" "$INPUT"
 
+   printf "Compressed ${INPUT}: "; bytes_saved "$INPUT" "$OUTPUT"
+else
 
-# print stats
-if [ $? == '0' ]; then
-    optsize=$(stat -c "%s" "${OUTPUT}")
-    orgsize=$(stat -c "%s" "${INPUT}")
-    if [ "${optsize}" -eq 0 ]; then
-        echo "No output!  Keeping original"
-        rm -f "${OUTPUT}"
-        exit;
-    fi
-    if [ ${optsize} -ge ${orgsize} ]; then
-        echo "Didn't make it smaller!"
-        # rm -f "${OUTPUT}"
-        exit;
-    fi
-    bytesSaved=$(expr $orgsize - $optsize)
-    percent=$(expr $optsize '*' 100 / $orgsize)
-    echo Saving $bytesSaved bytes \(now ${percent}% of old file size\)
+  mkdir "${OUTPUT_DIR}"
+  echo "Compressing PDFs from ${INPUT_DIR} to ${OUTPUT_DIR}"
+  echo ""
+
+for pdf in "${pdfs[@]}"; do
+  OUTPUT="${OUTPUT_DIR}/$pdf"
+  INPUT="${INPUT_DIR}/$pdf"
+
+  printf '\033[1;37m%-40s\033[0m' "${pdf}..."
+
+  gs -dBATCH -dNOPAUSE -dSAFER -q \
+   -sDEVICE=pdfwrite -dCompatibilityLevel=1.5 \
+   ${PDF_FLAGS} \
+   ${COLOR_FLAGS} \
+   ${DPI_FLAGS} \
+   ${FONT_FLAGS} \
+   -sOutputFile="$OUTPUT" "${INPUT}"
+
+   bytes_saved "$INPUT" "$OUTPUT"
+
+done
+
+  echo "All done."
+
 fi
+
+
+
+
+
+
+
+
+
 
 exit 0
 
