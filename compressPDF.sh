@@ -10,7 +10,7 @@ function print_usage(){
 
 bytes_saved(){
   # print stats
-  if [ -f $1 ]; then
+  if [ -f "$1" ]; then
     orgsize=$(stat -c "%s" "${1}")
     optsize=$(stat -c "%s" "${2}")
     if [[ "${optsize}" -eq 0 ]]; then
@@ -45,8 +45,12 @@ if [[ -f $1 ]]; then
 elif [[ -d $1 ]]; then
   INPUT_DIR="${1%/}"
   OUTPUT_DIR="${INPUT_DIR}_compressed"
+# save and change IFS
+OLDIFS=$IFS
+IFS=$'\n'
   pdfs=($(\ls "$1" | \grep -E '^*.pdf$'))
   #pdfs=($(find "$1" -maxdepth 1 -iname '*.pdf'))
+  IFS=$OLDIFS
   echo "'$INPUT_DIR/' is a directory. I will compress the following ${#pdfs[@]} PDFs and write them to '${OUTPUT_DIR}/'."
   printf '  - %s\n' "${pdfs[@]}"
   if [[ -d "$OUTPUT_DIR" ]]; then
